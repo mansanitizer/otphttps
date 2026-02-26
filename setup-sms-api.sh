@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-REPO_URL="https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git"
+REPO_URL="https://github.com/mansanitizer/otphttps.git"
 PROJECT_DIR="$HOME/sms-api-backend"
 DEFAULT_API_KEY="super-secret-api-key"
 PORT=3000
