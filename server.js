@@ -117,9 +117,15 @@ app.get('/api/status', async (req, res) => {
         const data = await response.json();
 
         const pinStatus = data.pinConfigured ? 'configured' : 'not configured';
+        let stateMessage = `UPI Engine is ${data.ussdEngineState}.`;
+
+        if (data.ussdEngineState === 'ERROR') {
+            stateMessage += " There is a problem with the engine. Please ensure the Accessibility Service is enabled in your Android settings and you have a working SIM card signal.";
+        }
+
         res.json({
             ...data,
-            voiceResponse: `UPI Engine is ${data.ussdEngineState}. Your UPI PIN is ${pinStatus}.`
+            voiceResponse: `${stateMessage} Your UPI PIN is ${pinStatus}.`
         });
     } catch (error) {
         res.status(500).json({ error: 'Server error', voiceResponse: 'Sorry, the UPI engine is not responding.' });
