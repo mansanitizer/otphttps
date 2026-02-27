@@ -1,14 +1,12 @@
 {
-  "name": "termux-sms-api",
+  "name": "upihttps",
   "version": "1.0.0",
-  "description": "Reads SMS messages from Termux and exposes them securely over HTTP.",
+  "description": "API wrapper for USSDPay to automate UPI payments via HTTPS (local) for accessibility and blind users.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }
