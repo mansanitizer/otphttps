@@ -43,6 +43,7 @@ npm install --silent
 echo "🟢 Starting Node API Server on port $PORT..."
 export API_KEY=$DEFAULT_API_KEY
 export PORT=$PORT
+export USE_HTTPS=false
 export NODE_ENV=production
 
 # Clear old logs
