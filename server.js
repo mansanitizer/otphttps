@@ -132,25 +132,63 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
-// 5. SMS OTP
+// 5. SMS API
+app.get('/api/sms', async (req, res) => {
+    try {
+        const params = new URLSearchParams(req.query);
+        const response = await fetch(`${USSDPAY_URL}/api/v1/sms?${params.toString()}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            let voiceResponse = 'Your recent messages are: ';
+            if (data.messages && data.messages.length > 0) {
+                data.messages.slice(0, 3).forEach((msg, index) => {
+                    if (msg.extractedOtp) {
+                        voiceResponse += `Code from ${msg.address} is ${msg.extractedOtp}. `;
+                    } else {
+                        let bodyVoice = msg.body.substring(0, 50).replace(/\n/g, ' ');
+                        voiceResponse += `Message from ${msg.address} says: ${bodyVoice}... `;
+                    }
+                });
+            } else {
+                voiceResponse = 'No recent messages found matching your criteria.';
+            }
+            res.json({
+                ...data,
+                voiceResponse
+            });
+        } else {
+            res.status(400).json({
+                ...data,
+                voiceResponse: `Failed to fetch messages. ${data.message || data.error || ''}`
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Server error', voiceResponse: 'Sorry, the UPI engine is not responding or SMS permissions are missing.' });
+    }
+});
+
+// 6. SMS OTP (Backwards compatible logic mapped to global sms route)
 app.get('/api/sms/otp', async (req, res) => {
     try {
-        // Forward to the engine API we created
-        const response = await fetch(`${USSDPAY_URL}/api/v1/sms/otp`);
+        const params = new URLSearchParams(req.query);
+        params.set('otpOnly', 'true');
+        const response = await fetch(`${USSDPAY_URL}/api/v1/sms?${params.toString()}`);
         const data = await response.json();
 
         if (response.ok) {
             let voiceResponse = 'Your recent OTPs are: ';
-            if (data.otps && data.otps.length > 0) {
-                data.otps.slice(0, 3).forEach((otpObj, index) => {
-                    // Just read out the actual code for the voice response
-                    voiceResponse += `Code from ${otpObj.address} is ${otpObj.extractedOtp}. `;
+            if (data.messages && data.messages.length > 0) {
+                data.messages.slice(0, 3).forEach((msg, index) => {
+                    voiceResponse += `Code from ${msg.address} is ${msg.extractedOtp}. `;
                 });
             } else {
                 voiceResponse = 'No recent OTPs found in your messages.';
             }
             res.json({
-                ...data,
+                otps: data.messages, // for backwards compatibility
+                count: data.count,
+                limit: data.limit,
                 voiceResponse
             });
         } else {
