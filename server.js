@@ -132,6 +132,38 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
+// 5. SMS OTP
+app.get('/api/sms/otp', async (req, res) => {
+    try {
+        // Forward to the engine API we created
+        const response = await fetch(`${USSDPAY_URL}/api/v1/sms/otp`);
+        const data = await response.json();
+
+        if (response.ok) {
+            let voiceResponse = 'Your recent OTPs are: ';
+            if (data.otps && data.otps.length > 0) {
+                data.otps.slice(0, 3).forEach((otpObj, index) => {
+                    // Just read out the actual code for the voice response
+                    voiceResponse += `Code from ${otpObj.address} is ${otpObj.extractedOtp}. `;
+                });
+            } else {
+                voiceResponse = 'No recent OTPs found in your messages.';
+            }
+            res.json({
+                ...data,
+                voiceResponse
+            });
+        } else {
+            res.status(400).json({
+                ...data,
+                voiceResponse: `Failed to fetch OTPs. ${data.message || data.error || ''}`
+            });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Server error', voiceResponse: 'Sorry, the UPI engine is not responding or SMS permissions are missing.' });
+    }
+});
+
 // Self-Signed Cert Generation for Local HTTPS (to satisfy iOS Siri Shortcuts without Cloudflare)
 let server;
 if (USE_HTTPS) {
